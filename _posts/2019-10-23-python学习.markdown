@@ -1,0 +1,525 @@
+Python
+
+## To be researched
+
+- Pip vs conda as package manager.
+
+## 重要的数据类型
+
+
+
+| name | desc                                    |
+| ---- | --------------------------------------- |
+| list | 按照index获取数据                       |
+| dict | 按照key存取数据                         |
+| set  | 集合，结果是唯一的， 经常和list一起使用 |
+
+
+
+### list
+
+初始化有多个方法
+
+```python
+#初始化
+#初始化方法1, 构造有很多种方式，下面是最基本的方式
+a = [1, 2, 3]
+
+#初始化方法2
+#range(stop) -> list of integers
+#range(start, stop[, step]) -> list of integers
+range(5) # 0,1,2,3,4 左闭右开
+range(2,5) # 2,3,4 左闭右开
+range(2, 6, 2) # 2,4 左闭右开
+range(5,0, -1 ) # [5,4,3,2,1],五个，但是左闭右开，所以没有0
+
+#初始化方法3， 通过字符串初始化， 初始化一个字符list
+list('abcdef') # ['a', 'b', 'c', 'd', 'e', 'f']
+
+#按照index访问， 0为首位置
+a[0] # 1
+a[1] # 2
+a[2] # 3
+
+
+```
+
+
+
+## What's the egg?
+
+> *Note: Egg packaging has been superseded by Wheel packaging.*
+
+Same concept as a `.jar` file in Java, it is a `.zip` file with some metadata files renamed `.egg`, for distributing code as bundles.
+
+[Specifically: The Internal Structure of Python Eggs](http://svn.python.org/projects/sandbox/trunk/setuptools/doc/formats.txt)
+
+> A "Python egg" is a logical structure embodying the release of a specific version of a Python project, comprising its code, resources, and metadata. There are multiple formats that can be used to physically encode a Python egg, and others can be developed. However, a key principle of Python eggs is that they should be discoverable and importable. That is, it should be possible for a Python application to easily and efficiently find out what eggs are present on a system, and to ensure that the desired eggs' contents are importable.
+>
+> The `.egg` format is well-suited to distribution and the easy uninstallation or upgrades of code, since the project is essentially self-contained within a single directory or file, unmingled with any other projects' code or resources. It also makes it possible to have multiple versions of a project simultaneously installed, such that individual programs can select the versions they wish to use.
+
+
+
+The `.egg` file is a distribution format for Python packages. It’s just an alternative to a source code distribution or Windows `exe`. But note that for pure `Python`, the `.egg` file is completely cross-platform.
+
+The `.egg` file itself is essentially a `.zip` file. If you change the extension to “`zip`”, you can see that it will have folders inside the archive.
+
+Also, if you have an `.egg` file, you can install it as a package using `easy_install`
+
+Example: To create an `.egg` file for a directory say `mymath` which itself may have several python scripts, do the following step:
+
+```python
+# setup.py
+from setuptools import setup, find_packages
+setup(
+    name = "mymath",
+    version = "0.1",
+    packages = find_packages()
+    )
+```
+
+Then, from the terminal do:
+
+```py
+ $ python setup.py bdist_egg
+```
+
+This will generate lot of outputs, but when it’s completed you’ll see that you have *three* new folders: *build*, *dist*, and *mymath.egg-info*. The only folder that we care about is the *dist* folder where you'll find your `.egg` file, **mymath-0.1-py3.5.egg** with your default python (installation) version number(mine here: 3.5)
+
+Source: [Python library blog](http://www.blog.pythonlibrary.org/)
+
+
+
+
+
+![image-20181224143417099](/Users/liyaqing/Library/Application Support/typora-user-images/image-20181224143417099.png)
+
+SOURCES.txt
+
+>setup.py
+>mymath.egg-info/PKG-INFO
+>mymath.egg-info/SOURCES.txt
+>mymath.egg-info/dependency_links.txt
+>mymath.egg-info/top_level.txt
+
+PKG-INFO
+
+> Metadata-Version: 1.0
+> Name: mymath
+> Version: 0.1
+> Summary: UNKNOWN
+> Home-page: UNKNOWN
+> Author: UNKNOWN
+> Author-email: UNKNOWN
+> License: UNKNOWN
+> Description: UNKNOWN
+> Platform: UNKNOWN
+
+
+
+##virtualenv?
+
+- Create isolated enviroments which is different sitr-packages
+
+
+
+### Key words
+
+Isolated, site-packages
+
+### Project description
+
+
+
+### Introduction
+
+`virtualenv` is a tool to create isolated Python environments.
+
+The basic problem being addressed is one of dependencies and versions, and indirectly permissions. Imagine you have an application that needs version 1 of LibFoo, but another application requires version 2. How can you use both these applications? If you install everything into `/usr/lib/python2.7/site-packages` (or whatever your platform’s standard location is), it’s easy to end up in a situation where you unintentionally upgrade an application that shouldn’t be upgraded.
+
+Or more generally, what if you want to install an application *and leave it be*? If an application works, any change in its libraries or the versions of those libraries can break the application.
+
+Also, what if you can’t install packages into the global `site-packages` directory? For instance, on a shared host.
+
+In all these cases, `virtualenv` can help you. It creates an environment that has its own installation directories, that doesn’t share libraries with other virtualenv environments (and optionally doesn’t access the globally installed libraries either).
+
+
+
+### Usage
+
+Virtualenv has one basic command:
+
+```bash
+$ virtualenv ENV
+```
+
+Where `ENV` is a directory to place the new virtual environment. It has a number of usual effects (modifiable by many [Options](https://virtualenv.pypa.io/en/latest/reference/#options)):
+
+> - `ENV/lib/` and `ENV/include/` are created, containing supporting library files for a new virtualenv python. Packages installed in this environment will live under `ENV/lib/pythonX.X/site-packages/`.
+> - `ENV/bin` is created, where executables live - noticeably a new **python**. Thus running a script with `#! /path/to/ENV/bin/python` would run that script under this virtualenv’s python.
+> - The crucial packages [pip](https://pypi.org/project/pip) and [setuptools](https://pypi.org/project/setuptools) are installed, which allow other packages to be easily installed to the environment. This associated pip can be run from `ENV/bin/pip`.
+
+The python in your new virtualenv is effectively isolated from the python that was used to create it.
+
+**Error might be raised**
+
+```txt
+New python executable in /Users/liyaqing/Documents/Projects/pythonproj/dqenv/bin/python
+Installing setuptools, pip, wheel...
+  Complete output from command /Users/liyaqing/Docu...roj/dqenv/bin/python - setuptools pip wheel:
+  Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/Users/liyaqing/anaconda2/lib/python2.7/tempfile.py", line 32, in <module>
+    import io as _io
+  File "/Users/liyaqing/anaconda2/lib/python2.7/io.py", line 51, in <module>
+    import _io
+ImportError: dlopen(/Users/liyaqing/Documents/Projects/pythonproj/dqenv/lib/python2.7/lib-dynload/_io.so, 2): Symbol not found: __PyCodecInfo_GetIncrementalDecoder
+  Referenced from: /Users/liyaqing/Documents/Projects/pythonproj/dqenv/lib/python2.7/lib-dynload/_io.so
+  Expected in: flat namespace
+ in /Users/liyaqing/Documents/Projects/pythonproj/dqenv/lib/python2.7/lib-dynload/_io.so
+----------------------------------------
+...Installing setuptools, pip, wheel...done.
+Traceback (most recent call last):
+  File "/Users/liyaqing/anaconda2/bin/virtualenv", line 11, in <module>
+    sys.exit(main())
+  File "/Users/liyaqing/anaconda2/lib/python2.7/site-packages/virtualenv.py", line 713, in main
+    symlink=options.symlink)
+  File "/Users/liyaqing/anaconda2/lib/python2.7/site-packages/virtualenv.py", line 945, in create_environment
+    download=download,
+  File "/Users/liyaqing/anaconda2/lib/python2.7/site-packages/virtualenv.py", line 901, in install_wheel
+    call_subprocess(cmd, show_stdout=False, extra_env=env, stdin=SCRIPT)
+  File "/Users/liyaqing/anaconda2/lib/python2.7/site-packages/virtualenv.py", line 797, in call_subprocess
+    % (cmd_desc, proc.returncode))
+OSError: Command /Users/liyaqing/Docu...roj/dqenv/bin/python - setuptools pip wheel failed with error code 1
+
+```
+
+solution, this is caused by the confilct between pip and conda
+
+>pip uninstall virtualenv
+>conda install virtualenv
+
+#### activate script
+
+In a newly created virtualenv there will also be a **activate** shell script. For Windows systems, activation scripts are provided for the Command Prompt and Powershell.
+
+On Posix systems, this resides in `/ENV/bin/`, so you can run:
+
+```bash
+$ source /path/to/ENV/bin/activate
+```
+
+```bash
+# After using source command, we can use the specified python env
+source ./bin/activate
+(dqenv) SH-liyaqing-1:dqenv liyaqing$ which python
+/Users/liyaqing/Documents/Projects/pythonproj/dqenv/bin/python
+
+```
+
+
+
+For some shells (e.g. the original Bourne Shell) you may need to use the **.** command, when **source** does not exist. There are also separate activate files for some other shells, like csh and fish.`bin/activate` should work for bash/zsh/dash.
+
+This will change your `$PATH` so its first entry is the virtualenv’s `bin/` directory. (You have to use `source` because it changes your shell environment in-place.) This is all it does; it’s purely a convenience.
+
+If you directly run a script or the python interpreter from the virtualenv’s `bin/` directory (e.g. `path/to/ENV/bin/pip` or `/path/to/ENV/bin/python-script.py`) then `sys.path` will automatically be set to use the Python libraries associated with the virtualenv. But, unlike the activation scripts, the environment variables `PATH` and `VIRTUAL_ENV` will *not* be modified. This means that if your Python script uses e.g. `subprocess` to run another Python script (e.g. via a `#!/usr/bin/env python` shebang line) the second script *may not be executed with the same Python binary as the first* nor have the same libraries available to it. To avoid this happening your first script will need to modify the environment variables in the same manner as the activation scripts, before the second script is executed.
+
+The `activate` script will also modify your shell prompt to indicate which environment is currently active. To disable this behaviour, see [`VIRTUAL_ENV_DISABLE_PROMPT`](https://virtualenv.pypa.io/en/latest/reference/#envvar-VIRTUAL_ENV_DISABLE_PROMPT).
+
+To undo these changes to your path (and prompt), just run:
+
+```
+$ deactivate
+```
+
+On Windows, the equivalent `activate` script is in the `Scripts` folder:
+
+```
+> \path\to\env\Scripts\activate
+```
+
+And type `deactivate` to undo the changes.
+
+Based on your active shell (CMD.exe or Powershell.exe), Windows will use either activate.bat or activate.ps1 (as appropriate) to activate the virtual environment. If using Powershell, see the notes about code signing below.
+
+Note
+
+If using Powershell, the `activate` script is subject to the [execution policies](http://technet.microsoft.com/en-us/library/dd347641.aspx) on the system. By default on Windows 7, the system’s excution policy is set to `Restricted`, meaning no scripts like the `activate` script are allowed to be executed. But that can’t stop us from changing that slightly to allow it to be executed.
+
+In order to use the script, you can relax your system’s execution policy to `AllSigned`, meaning all scripts on the system must be digitally signed to be executed. Since the virtualenv activation script is signed by one of the authors (Jannis Leidel) this level of the execution policy suffices. As an administrator run:
+
+```
+PS C:\> Set-ExecutionPolicy AllSigned
+```
+
+Then you’ll be asked to trust the signer, when executing the script. You will be prompted with the following:
+
+```
+PS C:\> virtualenv .\foo
+New python executable in C:\foo\Scripts\python.exe
+Installing setuptools................done.
+Installing pip...................done.
+PS C:\> .\foo\scripts\activate
+
+Do you want to run software from this untrusted publisher?
+File C:\foo\scripts\activate.ps1 is published by E=jannis@leidel.info,
+CN=Jannis Leidel, L=Berlin, S=Berlin, C=DE, Description=581796-Gh7xfJxkxQSIO4E0
+and is not trusted on your system. Only run scripts from trusted publishers.
+[V] Never run  [D] Do not run  [R] Run once  [A] Always run  [?] Help
+(default is "D"):A
+(foo) PS C:\>
+```
+
+If you select `[A] Always Run`, the certificate will be added to the Trusted Publishers of your user account, and will be trusted in this user’s context henceforth. If you select `[R] Run Once`, the script will be run, but you will be prompted on a subsequent invocation. Advanced users can add the signer’s certificate to the Trusted Publishers of the Computer account to apply to all users (though this technique is out of scope of this document).
+
+Alternatively, you may relax the system execution policy to allow running of local scripts without verifying the code signature using the following:
+
+```
+PS C:\> Set-ExecutionPolicy RemoteSigned
+```
+
+Since the `activate.ps1` script is generated locally for each virtualenv, it is not considered a remote script and can then be executed.
+
+On xonsh, the equivalent `activate` script is called `activate.xsh`, and lives in either the `bin/`directory (on posix systems) or the `Scripts\` directory (on Windows). For example:
+
+```
+$ source /path/to/ENV/bin/activate.xsh
+```
+
+With xonsh, you may still run the `deactivate` command to undo the changes.
+
+#### Removing an Environment
+
+Removing a virtual environment is simply done by deactivating it and deleting the environment folder with all its contents:
+
+```
+(ENV)$ deactivate
+$ rm -r /path/to/ENV
+```
+
+#### The [`--system-site-packages`](https://virtualenv.pypa.io/en/latest/reference/#cmdoption-system-site-packages) Option
+
+If you build with `virtualenv --system-site-packages ENV`, your virtual environment will inherit packages from `/usr/lib/python2.7/site-packages` (or wherever your global site-packages directory is).
+
+This can be used if you have control over the global site-packages directory, and you want to depend on the packages there. If you want isolation from the global system, do not use this flag.
+
+If you need to change this option after creating a virtual environment, you can add (to turn off) or remove (to turn on) the file `no-global-site-packages.txt` from `lib/python3.7/` or equivalent in the environments directory.
+
+#### Windows Notes
+
+Some paths within the virtualenv are slightly different on Windows: scripts and executables on Windows go in `ENV\Scripts\` instead of `ENV/bin/` and libraries go in `ENV\Lib\` rather than `ENV/lib/`.
+
+To create a virtualenv under a path with spaces in it on Windows, you’ll need the [win32api](https://github.com/mhammond/pywin32/) library installed.
+
+### Using Virtualenv without `bin/python`
+
+Sometimes you can’t or don’t want to use the Python interpreter created by the virtualenv. For instance, in a [mod_python](http://www.modpython.org/) or [mod_wsgi](http://www.modwsgi.org/) environment, there is only one interpreter.
+
+Luckily, it’s easy. You must use the custom Python interpreter to *install* libraries. But to *use* libraries, you just have to be sure the path is correct. A script is available to correct the path. You can setup the environment like:
+
+```
+activate_this = '/path/to/env/bin/activate_this.py'
+exec(open(activate_this).read(), {'__file__': activate_this}))
+```
+
+This will change `sys.path` and even change `sys.prefix`, but also allow you to use an existing interpreter. Items in your environment will show up first on `sys.path`, before global items. However, global items will always be accessible (as if the [`--system-site-packages`](https://virtualenv.pypa.io/en/latest/reference/#cmdoption-system-site-packages) flag had been used in creating the environment, whether it was or not). Also, this cannot undo the activation of other environments, or modules that have been imported. You shouldn’t try to, for instance, activate an environment before a web request; you should activate *one* environment as early as possible, and not do it again in that process.
+
+### Making Environments Relocatable
+
+**Note:** this option is somewhat experimental, and there are probably caveats that have not yet been identified.
+
+Warning
+
+The `--relocatable` option currently has a number of issues, and is not guaranteed to work in all circumstances. It is possible that the option will be deprecated in a future version of `virtualenv`.
+
+Normally environments are tied to a specific path. That means that you cannot move an environment around or copy it to another computer. You can fix up an environment to make it relocatable with the command:
+
+```
+$ virtualenv --relocatable ENV
+```
+
+This will make some of the files created by setuptools use relative paths, and will change all the scripts to use `activate_this.py` instead of using the location of the Python interpreter to select the environment.
+
+**Note:** scripts which have been made relocatable will only work if the virtualenv is activated, specifically the python executable from the virtualenv must be the first one on the system PATH. Also note that the activate scripts are not currently made relocatable by `virtualenv --relocatable`.
+
+**Note:** you must run this after you’ve installed *any* packages into the environment. If you make an environment relocatable, then install a new package, you must run `virtualenv --relocatable`again.
+
+Also, this **does not make your packages cross-platform**. You can move the directory around, but it can only be used on other similar computers. Some known environmental differences that can cause incompatibilities: a different version of Python, when one platform uses UCS2 for its internal unicode representation and another uses UCS4 (a compile-time option), obvious platform changes like Windows vs. Linux, or Intel vs. ARM, and if you have libraries that bind to C libraries on the system, if those C libraries are located somewhere different (either different versions, or a different filesystem layout).
+
+If you use this flag to create an environment, currently, the [`--system-site-packages`](https://virtualenv.pypa.io/en/latest/reference/#cmdoption-system-site-packages) option will be implied.
+
+### The [`--extra-search-dir`](https://virtualenv.pypa.io/en/latest/reference/#cmdoption-extra-search-dir) option
+
+This option allows you to provide your own versions of setuptools and/or pip to use instead of the embedded versions that come with virtualenv.
+
+To use this feature, pass one or more `--extra-search-dir` options to virtualenv like this:
+
+```
+$ virtualenv --extra-search-dir=/path/to/distributions ENV
+```
+
+The `/path/to/distributions` path should point to a directory that contains setuptools and/or pip wheels.
+
+virtualenv will look for wheels in the specified directories, but will use pip’s standard algorithm for selecting the wheel to install, which looks for the latest compatible wheel.
+
+As well as the extra directories, the search order includes:
+
+1. The `virtualenv_support` directory relative to virtualenv.py
+2. The directory where virtualenv.py is located.
+3. The current directory.
+
+[Next ](https://virtualenv.pypa.io/en/latest/reference/)[ Previous](https://virtualenv.pypa.io/en/latest/installation/)
+
+Refs:
+
+https://pypi.org/project/virtualenv/
+
+
+
+
+
+## buildout
+
+buildout.cfg是必须的
+
+```
+[buildout]
+parts = bobo
+
+[bobo]
+recipe = zc.recipe.egg
+eggs = bobo
+```
+
+
+
+## How to install package offline?
+
+如果你需要在服务器上安装一些packages，例如numpy, 但是你没有权限安装，怎么办？
+
+或者你不想装在系统路径下，这样，会影响别人，因此最好使用virtualenv，但是不好意思，你连使用pip安装virtualenv的权限也没有，为什么？
+
+下面这种方法可以暂时解决我的环境问题，但是是安装在 .catch目录下的，/home/dq_dev/.cache/pip/wheels， 也可以被引用。
+
+```bash
+#in your development pc
+mkdir packages
+cd packages
+pip install numpy
+pip freeze > requirements.txt
+pip download --no-binary=:all: -r ./requirements.txt
+zip packages.zip ./*
+
+#upload zip file to the server
+unzip packages.zip -d ./packages
+cd packages
+pip install --no-index --find-links=./ -r requirements.txt
+
+
+
+```
+
+
+
+## flask网站部署
+
+问题: flask中需要部署对静态页面的访问支持，本来这部分应该由nginx进行，但是由于权限问题，现在这部分没有，因此需要将js/html/css文件由flask进行service。
+
+在flask的文件结构如下
+
+```
+-rw-rw-r-- 1 dq_dev dq_dev  367 Dec 25 22:44 hello.pyc
+drwxrwxr-x 2 dq_dev dq_dev 4096 Dec 26 14:57 static
+-rw-r--r-- 1 dq_dev dq_dev  339 Dec 26 14:58 hello.py
+```
+
+static文件下，有index.html文件
+
+**hello.py**
+
+```python
+from flask import Flask
+from flask_script import Manager, Server
+
+app = Flask(__name__, static_url_path='/static') #Here we add static_url_path to serve the static files
+manager = Manager(app)
+manager.add_command("runserver",
+         Server(host='172.18.1.36',port=5000, use_debugger=True))
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == '__main__':
+    manager.run()
+```
+
+但是url中间有个static
+
+http://datamonitor.51y5.net/static/index.html
+
+为了去除url中的static，需要在Flask类的初始化中，增加传入的参数static_folder。 [ref1](https://stackoverflow.com/questions/20646822/how-to-serve-static-files-in-flask)
+
+```python
+from flask import Flask
+from flask_script import Manager, Server
+
+app = Flask(__name__, static_url_path='', static_folder='static')
+manager = Manager(app)
+manager.add_command("runserver",
+         Server(host='172.18.1.36',port=5000, use_debugger=True))
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == '__main__':
+    manager.run()
+```
+
+
+
+现在行了, http://datamonitor.51y5.net/index.html
+
+问题：
+
+将vue编译好的文件放到指定static目录中，目录的路径不起作用。。。
+
+会报找不到路径。
+
+
+
+## What's Werkzeug
+
+
+
+Refs:
+
+http://werkzeug.pocoo.org/
+
+##WSGI
+
+Web Server Gateway Interface
+
+![WSGI Server - Web server - Browser](https://www.fullstackpython.com/img/visuals/web-browser-server-wsgi.png)
+
+###Refs:
+
+[Standard](https://www.python.org/dev/peps/pep-3333/)
+
+[Wsgi-servers](https://www.fullstackpython.com/wsgi-servers.html)
+
+
+
+###Nodejs VS Nginx
+
+
+
+npm config set proxy http://192.168.10.30:3128
+npm config set https-proxy http://192.168.10.30:3128
+
+
+
+export http_proxy=http://192.168.10.30:3128
+export https_proxy=192.168.10.30:3128
