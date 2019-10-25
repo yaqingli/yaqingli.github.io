@@ -1,0 +1,225 @@
+# 为什么需要单元测试
+
+1. 当代码分为诸多模块时，每个模块都有自己要实现的逻辑焦点（内聚），因此需要保证该模块正确的实现了自己的功能，这时就需要单元测试。
+2. 当你想修refactor模块时，你可能只想要修改模块的实现，但输入-输出逻辑没有发生变化，没有单元测试，你不能保证修改之后的代码是否还能正常运行，是否破坏了之前的逻辑。
+3. 当你想要增加功能时，涉及到修改原有代码，你需要单元测试保证原有的逻辑没有被破坏。
+4. 当你想要实现某一功能时，通过单元测试能保证你的实现，事实上，每个逻辑模块都应当被最小实现（仅完成单元测试需要的）。
+
+## **python示例**
+
+下面想要实现一个几何模块
+
+*Iterate1*
+
+```python
+#Geometric.py
+import math
+class Point(object):
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
+
+    def distance(self, another_point):
+        raise NotImplementedError()
+
+```
+
+单元测试
+
+```python
+#test_Geometric.py
+import unittest
+from Geometric import Point
+
+
+class TestPoint(unittest.TestCase):
+    def test_distance(self):
+        point1 = Point(0, 0)
+        point2 = Point(1, 0)
+        self.assertEqual(1, point1.distance(point2))
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+运行上面单元测试，有下面的结果，这是期待的结果，因为目前为止没有实现Point.distance的逻辑。如果是这种顺序，这算是TDD的方式，先写单元测试，再实现，单元测试可以当成文档。
+
+```
+======================================================================
+ERROR: test_distance (__main__.TestPoint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "test_Geometric.py", line 9, in test_distance
+    self.assertEqual(1, point1.distance(point2))
+  File "/Users/***/Documents/Projects/pythonproj/StudyUnitTest/Geometric.py", line 13, in distance
+    raise NotImplementedError()
+NotImplementedError
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+```
+
+*Iterate2*
+
+实现distance
+
+```python
+#Geometric.py
+import math
+class Point(object):
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
+#实现distance方法
+    def distance(self, another_point):
+        return math.sqrt(math.pow(self._x - another_point.get_x(), 2) + \
+            math.pow(self._y - another_point.get_y(), 2))
+
+```
+
+单元测试不需要改变
+
+直接运行单元测试, 单元测试通过
+
+```
+$ python test_Geometric.py 
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK 
+```
+
+
+
+# 为什么需要mock
+
+**关键词**：单元测试，mock
+
+模块之间有依赖， 当依赖模块还未实现或者是由别人实现，此时需要对依赖模块进行*伪装*，模拟一个特定的行为 。测试过程中应当基于依赖模块的假定输出进行测试，消除其他模块的干扰，只关注当前模块的功能。有了单元测试，代码设计中，也应当注意模块的单一功能特性。
+
+- 依赖模块是别人实现的
+- 依赖模块的数据产生不确定，例如http的返回，数据库的返回值
+
+## Python示例
+
+假设Point还没实现，功能由别人实现。现在我们要实现一个Circle类。
+
+```python
+#Geometric.py
+import math
+
+class Point(object):
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
+
+    def distance(self, another_point):
+        raise NotImplementedError()
+        
+class Circle(object):
+    def __init__(self, point, r):
+        self._point = point
+        self._r = r
+
+    def get_center(self):
+        return self._point
+    
+    def get_r(self):
+        return self._r
+
+    def intersect(self, another_circle):
+        distance = self._point.distance(another_circle.get_center())
+        if distance>self._point.get_r()+another_circle.get_r():
+            return False
+        else:
+            return True
+```
+
+Test case
+
+```python
+#test_Geometric.py
+import unittest
+from Geometric import Point, Circle
+
+
+class TestPoint(unittest.TestCase):
+    def test_distance(self):
+        point1 = Point(0, 0)
+        point2 = Point(1, 0)
+        self.assertEqual(1, point1.distance(point2))
+
+
+class TestCircle(unittest.TestCase):
+    def test_intersect(self):
+        circle1 = Circle(Point(0, 0), 5)
+        circle2 = Circle(Point(0, 10), 3)
+        self.assertFalse(circle1.intersect(circle2))
+```
+
+当前运行会失败。由于Point类还未实现，但是就是想测试Circle类是否正确实现了自己的功能, 因为只需要知道两个圆心之间的距离和半径的关系，就能知道结果，而圆心之间的距离是由Point类提供。 在这个方法里，我们实际上关心的是圆心距离和半径和之间的关系，因此mock Point.distance()方法就可以知道该逻辑是否正确实现。
+
+当然，如果用户自己实现了Point类，也不用mockPoint类
+
+**Test case with mock**
+
+```python
+#test_Geometric.py
+
+def fake_point_distance(point1, point2):
+    return 10
+
+class TestCircle(unittest.TestCase):
+
+    @patch.object(Geometric.Point, 'distance', fake_point_distance)
+    def test_intersect(self):
+        circle1 = Circle(Point(0, 0), 5)
+        circle2 = Circle(Point(0, 10), 3)
+        self.assertFalse(circle1.intersect(circle2))
+```
+
+我们通过decorator @patch.object(Geometric.Point, 'distance', fake_point_distance)指定需要替代类的函数
+
+定义一个fake函数fake_point_distance， 参数数量需要和原数量保持一致
+
+这样，就顺利通过了测试。
+
+
+
+当Point.distance被正确实现后，是否需要去掉fake？答案是并不需要，因为这就是一种边界的定义。
+
+
+
+
+
+# 后记：
+
+在C#/Java中，实现mock的方式是使用接口，因此也大量使用面向接口的编程。
+
+
+
+
+
+
