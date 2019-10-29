@@ -1,0 +1,46 @@
+统计词频，大概两亿行， 没行有三个字段，每个字段有多个标签
+
+
+```python
+#df = spark.sql(sql)
+df = spark.sql(''' select first_cate, second_cate, third_cate from  temp.temp1''')
+
+#df.cache()
+#df.show(10)
+#示例
+#df.createOrReplaceTempView('pkg_list')
+#df1 = spark.sql('select * from pkg_list')
+#df1.show(10)
+
+#函数
+def get_corpus(row):
+  first_cate = row[0]
+  second_cate = row[1]
+  third_cate = row[2]
+  tmp = list(set([cate for cate in first_cate.split(',') if cate.strip()!='']))
+  tmp.extend(list(set([cate for cate in second_cate.split(',') if cate.strip() !=''])))
+  tmp.extend(list(set([cate for cate in third_cate.split(',') if cate.strip() !=''])))
+  result = {}
+  for label in tmp:
+    result[label] = 1
+  return result
+
+
+def merge_key(label1, label2):
+  for k,v in label2.items():
+    if k in label1:
+      label1[k] +=label2[k]
+    else:
+      label1[k] =label2[k]
+  return label1
+
+label_dict = df['first_cate', 'second_cate', 'third_cate'].rdd.map(lambda row:get_corpus(row)).reduce(lambda x, y:merge_key(x, y))
+
+result = sorted([(k.encode('UTF-8'), v) for k,v in label_dict.items()], key = lambda x:x[1], reverse=True)
+
+with open('result.txt', 'w') as f:
+  f.write('\n'.join(item[0]+','+str(item[1]) for item in result))
+```
+
+
+
