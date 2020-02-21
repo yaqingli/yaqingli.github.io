@@ -1,4 +1,6 @@
-# Python-postgresql
+
+
+n-postgresql
 
 https://www.postgresql.org/
 
@@ -9,6 +11,31 @@ Postgresql, python
 ## 简介
 
 postgresql是另一种关系型数据库
+
+
+
+## postgresql的常用命令
+
+不同于mysql， postgresql没有show databases, show tables, exit等命令，而使用另一些种类的命令。
+
+连接：使用psql客户端, https://www.postgresqltutorial.com/psql-commands/
+
+显示数据库：\d
+
+显示表：\dt
+
+```shell
+$psql -d dvdrental -U postgres -W
+Password for user postgres:
+#List available databases
+\l
+#Switch connection to a new database
+\c dbname username
+#List available tables
+\dt
+#Describe a table
+\d table_name
+```
 
 
 
@@ -46,6 +73,9 @@ def extract_data_by_sql(file_path, sql):
                 batch += 1
                 rows = csr.fetchmany(10000)
 ```
+
+
+
 
 
 
